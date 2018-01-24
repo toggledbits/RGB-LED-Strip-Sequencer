@@ -1,5 +1,7 @@
 # RGB LED Strip Sequencer (Arduino & Adafruit Trellis) #
 
+![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/cover.jpg "RGB LED Strip Sequencer (Arduino and Adafruit Trellis)")
+
 ## Background ##
 
 My wife had been asking me to install LED strips on my boys' hutch-style desks, which were a little dark.
@@ -59,9 +61,11 @@ project will restore defaults to EEPROM.
 
 ### Driving the LED Strip ###
 
-The first thing I did was wire up a driver board using MOSFETs, one per color channel. I used IRLB8721s because
+The first thing I did was wire up a proto board using MOSFETs to drive the color channels. I used IRLB8721s because
 I had a bunch around and they would be fine for driving fairly hefty wattages of LEDs. The MOSFETs are driven
 by PWM-capable digital outputs on the Ardunio (D9-11, specifically), allowing brightness control.
+
+![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/proto-board.jpg "The proto board")
 
 ### Discovering a User Interface ###
 
@@ -114,6 +118,8 @@ When I got the boards back, everything went together perfectly. I tested the boa
 power supply, and it seemed to work fine. When I hooked it up to the Arduino, everything worked perfectly. So there it was,
 version 1.0.
 
+![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/shield-and-trellis.jpg "Trellis on Shield")
+
 It took me a few attempts to get the 3D-printed enclosure just perfect. I've been learning Fusion 360 recently, and I find it
 quite intuitive and easy to work in. I really love it. It's much easier to use and more powerful than my previous go-to tool,
 123D Design (also AutoDesk, now discontinued). The lid was actually a snap, because the holes for the Trellis' buttons
@@ -124,6 +130,8 @@ sandwich took a couple of attempts, and my first attempt was too tight to comfor
 It takes about 4 hours to print a body with 200u layers, so it wasn't that it was hard, each test print just took time (shout 
 out to [Josef Prusa and crew](https://www.prusa3d.com/) here--this was my first time using my new Prusa i3 MK2S Christmas present
 on a real project, and it performed beautifully).
+
+![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/test-print.jpg "An early test print")
 
 ### Today: Version 1.1 ###
 
