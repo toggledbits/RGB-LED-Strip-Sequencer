@@ -69,7 +69,7 @@ For an interface, I had often used the uniquitous 16x2 LCD with four or five tac
 but I felt that that kind of interface was going to be slow and clumsy for this purpose. 
 What I really thought would work well was a 
 matrix of lighted buttons like they use on MIDI controllers. I thought it would be easy to create an interface
-on it, and the boys would think it was really cool-looking (I just want to give a shout out to Thomas Dolby for
+on it, and the boys would think it was really cool-looking (shout out to Thomas Dolby for
 that--it's a long story, maybe ask me over a beer).
 
 I don't recall how I found it, but I ended up stumbling across the Adafruit Trellis. It's (as of this writing)
@@ -129,7 +129,7 @@ on a real project, and it performed beautifully).
 
 As happens with all prototypes, you discover a few mistakes along the way. In the process of building the first unit for
 my older boy, and writing the Instructable to describe the process, I realized that I made two mistakes I would need to
-correct right away:
+corrected right away:
 
 * I needed a protection diode to prevent any power directly into the Arduino from trying to power the LEDs. That is, if
 the project was connected to USB for Sketch updating and the 12V supply was not connected, the Arduino would be sending
@@ -142,12 +142,14 @@ easy enhancement to the UI.
 So, as it stands today, the project consists of:
 
 1. A custom-designed Arduino shield that creates all of the interfaces for the circuit: input, output, and power;
-1. An Arduino Sketch that drives the driver shield and the Trellis;
+1. An Arduino Sketch that drives the shield and the Adafruit Trellis;
 1. An enclosure designed in Fusion 360 to fit the current hardware configuration.
 
 ## Build One! ##
 
 If you want to build one, check out the Instructable I made about building this project.
 
-In this repository, you'll find the pieces you need: schematics, board design files (if you make the shield instead of just
-using a proto board or breadboard), and the Arduino Sketch.
+In this repository, you'll find all the pieces you need: schematics, board design files (if you make the shield instead of just
+using a proto board or breadboard), the Arduino Sketch, and the enclosure model (STL) files.
+
+The enclosure models are also [on Thingiverse](https://www.thingiverse.com/thing:2768560).
