@@ -99,16 +99,16 @@ my LEDs were powered from a 12VDC 2A power supply, and the Arduino was powered f
 Arduino could take a 12V input, I checked the circuit for the Uno. The Uno does have a VIN pin on its headers, so I could
 get 12V to the shield, but the PJ202 jack on the Arduino has a protection diode connected between it and that VIN pin, 
 and that diode (and probably the traces on the Arduino) were unlikely to handle the potential power demand that the LEDs
-would make on them. The published Arduino circuit quickly confirmed, however, that I could supply power TO the Arduino on
-the VIN pin, and have the 12V supply connect directly to the shield. This left the matter of the 5V supply required by the
-Trellis, but it turns out that the Arduino supplies 5V from its on-board regulated supply on a pin. So in the final result,
-12V is connect to the shield, which sends 12V to the Arduino, which sends 5V back to the shield, which sends that 5V up to
+would make on them. The published Arduino schematic quickly confirmed, however, that I could supply power *to* the Arduino on
+the VIN pin, and have the 12V supply connect directly to the shield. This left the matter of getting a 5V supply to the
+Trellis, but that's easy because the Arduino supplies 5V from its on-board regulated supply on a pin. So, in the final result,
+12V is supplied to the shield, which sends 12V to the Arduino over VIN, which sends 5V back to the shield, which sends that 5V up to
 the Trellis. And, the shield traces are all large enough to handle the larger currents the LED strips require. Done.
 
-Right before I sent the boards out to be fab'd, I realized that I could make holes for stand-offs, so the Trellis could
-mount to the shield. Thus the shield would be firmly mounted to the Arduino, and the Trellis mounted to the shield, like
-a sandwich. Perfect. I just had to move two traces slightly to get the holes where they needed to be, and off the v1.0 
-board went for prototype fabrication.
+Right before I sent the boards out to be fabricated, I realized that I could make holes for stand-offs, so the Trellis could
+mount to the shield. This would make a sandwich: Arduino on the bottom, shield connected to it, and Trellis connected to shield
+on top. Perfect. I just had to move two traces slightly to get the Trellis mounting holes where they needed to be, and off the v1.0 
+board went to the board house.
 
 When I got the boards back, everything went together perfectly. I tested the board standalone, driving it with my bench
 power supply, and it seemed to work fine. When I hooked it up to the Arduino, everything worked perfectly. So there it was,
@@ -122,7 +122,8 @@ that kind of thing. It took me less than 30 minutes to design a lid, and that de
 however, had holes in vertical sides, and getting those positioned so that they ended up lining up right with my three-board
 sandwich took a couple of attempts, and my first attempt was too tight to comfortably get the board into. 
 It takes about 4 hours to print a body with 200u layers, so it wasn't that it was hard, each test print just took time (shout 
-out to Josef Prusa and crew here--this was my first time using my new Prusa i3 MK2S on a real project, and it performed beautifully).
+out to [Josef Prusa and crew](https://www.prusa3d.com/) here--this was my first time using my new Prusa i3 MK2S Christmas present
+on a real project, and it performed beautifully).
 
 ### Today: Version 1.1 ###
 
