@@ -26,7 +26,7 @@ This repository contains what is currently my version 1.1 effort.
 
 ## What It Does ##
 
-[YouTube video](https://youtu.be/xU6wqpSIGhU)
+[See it in action on YouTube!](https://youtu.be/xU6wqpSIGhU)
 
 The Arduino drives three MOSFETs to drive the color channels of the LED strip. An [Adafruit Trellis](https://www.adafruit.com/product/1616) 4x4 button 
 matrix is used to create the user interface. Color-keying of the button LEDs helps provide visual cues to function
