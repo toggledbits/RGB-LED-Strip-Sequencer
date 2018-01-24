@@ -118,6 +118,8 @@ When I got the boards back, everything went together perfectly. I tested the boa
 power supply, and it seemed to work fine. When I hooked it up to the Arduino, everything worked perfectly. So there it was,
 version 1.0.
 
+Check out the [YouTube video](https://youtu.be/SFQtTEeX06Y).
+
 ![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/shield-and-trellis.jpg "Trellis on Shield")
 
 It took me a few attempts to get the 3D-printed enclosure just perfect. I've been learning Fusion 360 recently, and I find it
@@ -155,7 +157,7 @@ So, as it stands today, the project consists of:
 
 ## Build One! ##
 
-If you want to build one, check out the [Instructable](#) I made about building this project.
+If you want to build one, check out the [YouTube video](https://youtu.be/SFQtTEeX06Y) and [Instructable](#) I made about building this project.
 
 This Github repository contains all of the files you need: schematics, board layouts (if you decide to build the shield instead of just
 using a proto board or breadboard), the Arduino Sketch, and the enclosure model (STL) files.
