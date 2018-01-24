@@ -1,4 +1,4 @@
-# RGB LED Strip Sequencer (Arduino & Adafruit Trellis) #
+# RGB LED Strip Sequencer using Arduino & Adafruit Trellis #
 
 ![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/cover.jpg "RGB LED Strip Sequencer (Arduino and Adafruit Trellis)")
 
@@ -155,9 +155,9 @@ So, as it stands today, the project consists of:
 
 ## Build One! ##
 
-If you want to build one, check out the Instructable I made about building this project.
+If you want to build one, check out the [Instructable](#) I made about building this project.
 
-In this repository, you'll find all the pieces you need: schematics, board design files (if you make the shield instead of just
+This Github repository contains all of the files you need: schematics, board layouts (if you decide to build the shield instead of just
 using a proto board or breadboard), the Arduino Sketch, and the enclosure model (STL) files.
 
-The enclosure models are also [on Thingiverse](https://www.thingiverse.com/thing:2768560).
+The enclosure models (STLs) are also [on Thingiverse](https://www.thingiverse.com/thing:2768560).
