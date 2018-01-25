@@ -125,16 +125,20 @@ Check out the [YouTube video](https://youtu.be/SFQtTEeX06Y).
 
 ![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/shield-and-trellis.jpg "Trellis on Shield")
 
-It took me a few attempts to get the 3D-printed enclosure just perfect. I've been learning Fusion 360 recently, and I find it
+It took me a few attempts to get the 3D-printed enclosure just perfect. I've only recently started using Fusion 360, and I find it
 quite intuitive and easy to work in. I really love it. It's much easier to use and more powerful than my previous go-to tool,
 123D Design (also AutoDesk, now discontinued). The lid was actually a snap, because the holes for the Trellis' buttons
 are very precisely spaced and Fusion 360 has tools for exactly
 that kind of thing. It took me less than 30 minutes to design a lid, and that design changed very little throughout. The body,
-however, had holes in vertical sides, and getting those positioned so that they ended up lining up right with my three-board
-sandwich took a couple of attempts, and my first attempt was too tight to comfortably get the board into. 
-It takes about 4 hours to print a body with 200u layers, so it wasn't that it was hard, each test print just took time (shout 
-out to [Josef Prusa and crew](https://www.prusa3d.com/) here--this was my first time using my new Prusa i3 MK2S Christmas present
-on a real project, and it performed beautifully).
+however, had holes in two of its vertical sides, and getting those positioned so that they ended up lining up right with my three-board
+sandwich took a couple of attempts. It took about 4 hours to print a test body with 200u layers, so it wasn't that it was hard, 
+each test print just took time (shout out to [Josef Prusa and crew](https://www.prusa3d.com/) here--this was my first time using 
+my new Prusa i3 MK2S Christmas present on a real project, and it performed beautifully).
+
+The final design looks clean and fits OK. The Arduino is inserted first, on its own, into the bottom of the body. The
+shield with the Trellis mounted is then inserted into the Arduino. The lid is then pressed on over the Trellis, and is
+held by friction. I could tweak it to death, but I have other ideas about how I want to modify the project that will require
+big changes to the enclosure, so it's not worth my time at the moment to sweat over a millimeter here or there.
 
 ![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/test-print.jpg "An early test print")
 
@@ -154,9 +158,17 @@ easy enhancement to the UI.
 
 So, as it stands today, the project consists of:
 
-1. A custom-designed Arduino shield that creates all of the interfaces for the circuit: input, output, and power;
-1. An Arduino Sketch that drives the shield and the Adafruit Trellis;
-1. An enclosure designed in Fusion 360 to fit the current hardware configuration.
+1. The custom-designed Arduino shield that creates all of the interfaces for the circuit: input, output, and power;
+1. The Arduino Sketch that drives the shield and the Adafruit Trellis;
+1. The enclosure designed in Fusion 360 to fit the current hardware configuration.
+
+## What's Next ##
+
+My current thoughts about the next revision of this project are:
+
+1. A version of the driver that accepts a Nano or Feather directly. This will "shorten" the sandwich and make a more compact design.
+1. WiFi-enable it so my home automation system can monitor and control it.
+1. Modify the case design to that the boards are inserted from the bottom. This will make fitting them into the case easier.
 
 ## Build One! ##
 
