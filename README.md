@@ -62,8 +62,8 @@ project will restore defaults to EEPROM.
 ### Driving the LED Strip ###
 
 The first thing I did was wire up a proto board using MOSFETs to drive the color channels. I used IRLB8721s because
-I had a bunch around and they would be fine for driving fairly hefty wattages of LEDs. The MOSFETs are driven
-by PWM-capable digital outputs on the Ardunio (D9-11, specifically), allowing brightness control.
+I had a bunch around and they would be fine for handling fairly hefty wattages. The MOSFETs are driven
+by the PWM-capable digital outputs on the Ardunio (D9-11, specifically), allowing brightness control.
 
 ![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/proto-board.jpg "The proto board")
 
@@ -72,15 +72,17 @@ by PWM-capable digital outputs on the Ardunio (D9-11, specifically), allowing br
 For an interface, I had often used the uniquitous 16x2 LCD with four or five tactile switches for projects, 
 but I felt that that kind of interface was going to be slow and clumsy for this purpose. 
 What I really thought would work well was a 
-matrix of lighted buttons like they use on MIDI controllers. I thought it would be easy to create an interface
-on it, and the boys would think it was really cool-looking (shout out to Thomas Dolby for
-that--it's a long story, maybe ask me over a beer).
+matrix of lighted buttons like they use on MIDI controllers. I thought it would be easy to create a simple but
+powerful (enough) user interface on it, and the boys would think it was really cool-looking (shout out to Thomas Dolby for
+that--it's a long story, maybe ask me over a beer). So I started researching how to build one. Hmmm. That was going
+to get expensive. OK, is there an off-the-shelf product that didn't look like a DTMF or calculator keypad
+that I could interface with? Few, all expensive.
 
 I don't recall how I found it, but I ended up stumbling across the Adafruit Trellis. It's (as of this writing)
 a $9.95 board (plus $4.95 for the silicone keypad--not sure why they sell it separately) with a 4x4 matrix of
 addressable switches. The board doesn't come with LEDs, but you can provide your own and solder them to pads
-provided. The Arduino library lets you check button pressed and turn LEDs on and off with simple function calls, and 
-the board uses two-wire (I2C) communication. You can connect up to four together to create an 8x8 matrix.
+provided. The Arduino library lets you check button states and turn LEDs on and off with simple function calls, and 
+the board uses two-wire (I2C) communication. You can even connect up to eight together to make larger matrices.
 
 I ordered one, and started playing with it as soon as it arrived. Perfect. I soon had it working on the Arduino,
 and from there, imagining an interface and getting it to work took only a couple of hours.
@@ -125,14 +127,14 @@ Check out the [YouTube video](https://youtu.be/SFQtTEeX06Y).
 
 ![toggledbits](https://github.com/toggledbits/RGB-LED-Strip-Sequencer/raw/master/Images/shield-and-trellis.jpg "Trellis on Shield")
 
-It took me a few attempts to get the 3D-printed enclosure just perfect. I've only recently started using Fusion 360, and I find it
+It took me a few attempts to get the 3D-printed enclosure dialed in. I've only recently started using Fusion 360, and I find it
 quite intuitive and easy to work in. I really love it. It's much easier to use and more powerful than my previous go-to tool,
 123D Design (also AutoDesk, now discontinued). The lid was actually a snap, because the holes for the Trellis' buttons
 are very precisely spaced and Fusion 360 has tools for exactly
 that kind of thing. It took me less than 30 minutes to design a lid, and that design changed very little throughout. The body,
 however, had holes in two of its vertical sides, and getting those positioned so that they ended up lining up right with my three-board
-sandwich took a couple of attempts. It took about 4 hours to print a test body with 200u layers, so it wasn't that it was hard, 
-each test print just took time (shout out to [Josef Prusa and crew](https://www.prusa3d.com/) here--this was my first time using 
+sandwich took a couple of attempts. Each test print of the body took about 4 hours to print with 200u layers, so it wasn't that it was hard, 
+it just took time (shout out to [Josef Prusa and crew](https://www.prusa3d.com/) here--this was my first time using 
 my new Prusa i3 MK2S Christmas present on a real project, and it performed beautifully).
 
 The final design looks clean and fits OK. The Arduino is inserted first, on its own, into the bottom of the body. The
@@ -169,6 +171,7 @@ My current thoughts about the next revision of this project are:
 1. A version of the driver that accepts a Nano or Feather directly. This will "shorten" the sandwich and make a more compact design.
 1. WiFi-enable it so my home automation system can monitor and control it.
 1. Modify the case design to that the boards are inserted from the bottom. This will make fitting them into the case easier.
+1. I can see how some of the subtle design choices for the enclosure (like wall thickness) dramatically affect print time, so I'll tune the enclosure to make printing quicker and use less material.
 
 ## Build One! ##
 
