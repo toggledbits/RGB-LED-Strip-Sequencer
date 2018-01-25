@@ -85,12 +85,15 @@ the board uses two-wire (I2C) communication. You can connect up to four together
 I ordered one, and started playing with it as soon as it arrived. Perfect. I soon had it working on the Arduino,
 and from there, imagining an interface and getting it to work took only a couple of hours.
 
-### Version 1.0 is Born ###
-
-I soon had a fully working prototype, consisting of the Arduino, the Trellis, and my LED drivers on a proto board.
-But it had no enclosure, and the solder-globbing style of proto board work left me feeling like it was going to be
-a permanently unpolished project. I had already decided to 3D-print an enclosure, but I wanted the project to
+With the user interface shaping up, I connected everything together, supplied power to the LED strip, and played
+with my new toy. This was going to work great for the boys.
+Except, I could not imagine putting a spaghetti bundle of three boards and wiring on their desks. That was
+fraught with peril. I needed an enclosure, but that wasn't going to be enough.
+The solder-globbing style of proto board work left me feeling like it was going to be
+a permanently unpolished project. The case my hide the worst of it, but I wanted the project to
 look as polished on the inside as it was on outside. The driver board had to be cleaned up.
+
+### Version 1.0 is Born ###
 
 I started designing the driver board as a proper printed circuit board (PCB). It seemed obvious to me to make it a
 shield for the Arduino, so the connections between the two could be many and firm. After Googling out a few diagrams,
@@ -98,14 +101,14 @@ I had a board properly dimensioned with headers in the right places to be a shie
 confirmed the fit. Adding the driver circuit to the board from there was easy, as my driver circuit is simple and even the
 small size of the Arduino footprint left plenty of room.
 
-As I considered how to bring power to the board for the LEDs, I remembered that I'm powering two devices. Up until now,
-my LEDs were powered from a 12VDC 2A power supply, and the Arduino was powered from the USB port. After confirming that the
-Arduino could take a 12V input, I checked the circuit for the Uno. The Uno does have a VIN pin on its headers, so I could
-get 12V to the shield, but the PJ202 jack on the Arduino has a protection diode connected between it and that VIN pin, 
-and that diode (and probably the traces on the Arduino) were unlikely to handle the potential power demand that the LEDs
-would make on them. The published Arduino schematic quickly confirmed, however, that I could supply power *to* the Arduino on
+The next consideration was simplifying the power supplies. In the prototype, the LEDs were separately powered, and the
+Arduino drew its power from the USB port. It had to work standalone from a single supply. I double-checked the specs for 
+the Uno, and 12V supply wasn't going to be a problem. Checking the schematic, I could see there was a VIN header pin that would
+give me the supply voltage, but there was a potential problem: the PJ202 jack on the Arduino has a protection diode connected between it and that VIN pin, 
+and that diode (and probably the traces on the Arduino) were unlikely to handle the potential power demand that the LED strip
+would make on them. The schematic quickly confirmed, however, that I could supply power *to* the Arduino on
 the VIN pin, and have the 12V supply connect directly to the shield. This left the matter of getting a 5V supply to the
-Trellis, but that's easy because the Arduino supplies 5V from its on-board regulated supply on a pin. So, in the final result,
+Trellis, but that's easy because the Arduino supplies 5V from its on-board regulated supply on a header pin. So, in the final result,
 12V is supplied to the shield, which sends 12V to the Arduino over VIN, which sends 5V back to the shield, which sends that 5V up to
 the Trellis. And, the shield traces are all large enough to handle the larger currents the LED strips require. Done.
 
