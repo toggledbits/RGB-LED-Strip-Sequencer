@@ -148,13 +148,14 @@ big changes to the enclosure, so it's not worth my time at the moment to sweat o
 
 As happens with all prototypes, you discover a few mistakes along the way. In the process of building the first unit for
 my older boy, and writing the Instructable to describe the process, I realized that I made two mistakes I would need to
-corrected right away:
+correct right away:
 
 * I needed a protection diode to prevent any power directly into the Arduino from trying to power the LEDs. That is, if
 the project was connected to USB for Sketch updating and the 12V supply was not connected, the Arduino would be sending
 USB power at 5V up to the shield on the VIN pin, and the shield would attempt to power the LEDs with it. To prevent that,
 a diode facing the Arduino has been added to the shield, which blocks any backfeeding of the shield from the Arduino. The
 Arduino can be safely connected to USB, and will even power the Trellis, but it won't power the LED circuit on the shield.
+* I had forgotten to current limit the digital pins--whoops!--so I added R5-7.
 * I have not yet provided a way in the Sketch code to control the rate at which patterns are run. This is a relatively
 easy enhancement to the UI.
 
