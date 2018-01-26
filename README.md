@@ -175,7 +175,7 @@ My current thoughts about the next revision of this project are:
 
 ## Build One! ##
 
-If you want to build one, check out the [YouTube video](https://youtu.be/SFQtTEeX06Y) and [Instructable](#) I made about building this project.
+If you want to build one, check out the [YouTube video](https://youtu.be/SFQtTEeX06Y) and [Instructable](https://www.instructables.com/id/Programmable-RGB-LED-Sequencer-using-Arduino-and-A/) I made about building this project.
 
 This Github repository contains all of the files you need: schematics, board layouts (if you decide to build the shield instead of just
 using a proto board or breadboard), the Arduino Sketch, and the enclosure model (STL) files.
