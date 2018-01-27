@@ -203,7 +203,7 @@ To set the default pattern delay interval, your subclass can set the global `nex
 and must be greater than or equal to zero.
 
 To bind your runner to a button, go to the `setup()` function, and near its end you'll see the code below. The bold line is an example
-of how and where you add your pattern runner. In this example, we binds a new runner to pattern 0 (first button the third row).
+of how and where you add your pattern runner. In this example, we bind a new runner to pattern 0 (first button the third row).
 
 <pre>
   EEPROMRunner er = EEPROMRunner();
