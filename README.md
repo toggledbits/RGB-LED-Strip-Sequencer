@@ -205,11 +205,11 @@ and must be greater than or equal to zero.
 To bind your runner to a button, go to the setup() routine, and you'll see the code below. The bold line is an example
 of how and where you add your pattern runner.
 
-`EEPROMRunner er = EEPROMRunner();
+<pre>EEPROMRunner er = EEPROMRunner();
   for ( uint8_t i=0; i<8; ++i) {
     patternRunners[i] = &er;
   }
   /* Provide any overrides for the default pattern function here */
   patternRunners[4] = new ColorWheelRunner(); /* override for button 13/power button/pattern 5 */
-  **patternRunners[0] = new MyAmazingNewPattern();**
-`
+  <b>patternRunners[0] = new MyAmazingNewPattern();</b>
+</pre>
