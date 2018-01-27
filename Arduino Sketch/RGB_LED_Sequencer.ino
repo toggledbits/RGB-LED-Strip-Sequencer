@@ -23,17 +23,14 @@
  * Pin configurations are generally settable by modifying the #defines below, but
  * the system was designed as follows:
  * 
- * A2, A4, and A5 - Connect to Trellis INT, SDA, and SCL respectively. 5V and GND
+ * A4 and A5 - Connect to Trellis SDA and SCL respectively. 5V and GND
  * are connected as usual. This is the "reference" (example) connection for the
- * Trellis. The INT pin (A2) is not used and may be omitted.
+ * Trellis. The INT of the Trellis is not used.
  * 
- * Digital 9, 10, and 11 connect to the red, green, and blue MOSFET driver gates.
+ * Digital 9, 10, and 11 connect to the MOSFET driver gates.
  * The LED strip leads for each color (cathodes) are connected to the MOSFET drains.
- * The MOSFET drains are connected to +12V (for a 12V LED strip). LED voltage ground
+ * The MOSFET sources are connected to ground (N-channel enhancement). The driver
  * MUST be connected in common with the Arduino/5V system ground (same reference).
- * 
- * If a white channel is used, the standard #define expects it on pin 6. Connection
- * is the same as the RGB channels.
  * 
  * In my design, I color-coded the Trelis LEDs (loosely) to correspond to button
  * functions. Thus the top two rows of the Trellis (buttons 0-7) are red, green,
@@ -49,23 +46,25 @@
  * color would also work out well (white recommended).
  * 
  * Use:
- * When the Uno powers up, it initializes the Trellis library and various globals for
+ * When the 'duino powers up, it initializes the Trellis library and various globals for
  * its button and sequence processing, and waits in the "OFF" state (no LEDs on). The 
  * Trellis is unlit at this point. Press and hold the lower-left Trellis button to turn
  * the unit ON. The system will power up the Trellis display, lighting the 8 color con-
  * trol buttons (0-7) and the lower-left (12) button (as a power indicator, redundant).
- * The system is now in IDLE state. In this state, the color output of the LED drivers
+ * The system also checks the EEPROM by computing a checksum for its data. If the
+ * checksum and data don't agree, the default pattern array is written to EEPROM.
+ * 
+ * The system powers to IDLE state. In this state, the color output of the LED drivers
  * can be modified using buttons 0-7 (for example, buttons 0 and 4 raise and lower,
  * respectively, the brightness of the red LED strip channel if everything is connected
  * correctly). To run a pattern, briefly press one of the pattern buttons 8-15 (the
  * lower two rows of buttons). There are eight-preprogrammed sequences or patterns
  * defined. Stop a running pattern by either pressing the same pattern button again
  * (the button of the running pattern is the blinking one, so press the blinking one).
- * You can also press the RGBW brightness buttons (0-7) at any time to stop the running
- * sequence at the current step.
+ * Pressing the white up/down buttons during run speed up or slow down the pattern.
  * 
  * Patterns can be edited, and the edited pattern is stored in EEPROM. To edit a pattern,
- * "long-press" (more than one second) any of the pattern buttons except 12 (more below).
+ * "long-press" (more than one second) any of the pattern buttons except 13 (more below).
  * The pattern button will light solid, and the brightness buttons will blink. Adjust the
  * brightness of each channel to achieve the desired color and brightness for the first
  * step of your pattern, then briefly press the (solid) pattern button again. Each press
@@ -76,15 +75,15 @@
  * editing an existing pattern--if you make a change to step 3 of an 8-step pattern
  * and then bail out with a long press, the pattern is shortened to 3 steps.
  * 
- * Since the LED strip I'm using doesn't have a white channel, I reuse the white bright-
- * ness buttons to control sequence timing. Use the up and down white buttons to increase
- * and decrease the inter-step delay (each unit/press is about 128ms, so timing varies
- * from 128ms to 2,176ms--you can't set a delay of zero).
- * 
  * To turn the system off, press and hold button 12 (lower left). Because of this, pre-
  * defined pattern 5 cannot be edited, as the long-press is used for power off in pref-
  * erence to entering edit mode. Maybe a two-button sequence could be implemented instead,
  * but for now, this is good enough.
+ * 
+ * Long-pressing buttons 13 and 16 together while the system is in the OFF state will
+ * cause it to "factory reset" by rewriting the origin pattern set back to EEPROM. We do
+ * this by simply mangling the EEPROM checksum, and allowing the next reset to see that
+ * it's wrong.
  * 
  * Finally, if a button is not pressed for DIMDELAY ms, the system dims the Trellis to
  * its lowest brightness. A button press restores full brightness.
@@ -107,7 +106,6 @@ Adafruit_TrellisSet trellis = Adafruit_TrellisSet(&matrix);
 #define RGBPIN_RED 10
 #define RGBPIN_GREEN 9
 #define RGBPIN_BLUE 11
-#define RGBPIN_WHITE 6
 
 /* 
  * Pre-defined (default) patterns. These are loaded into EEPROM during setup
@@ -126,22 +124,50 @@ const Pattern PROGMEM Seqs[] = {
   /* 1 */  { 12, 200, 0x00200000, 0x00400000, 0x00800000, 0x00c00000, 0x00e00000, 0x00ff0000, 0x00e00000, 0x00c00000, 0x00800000, 0x00400000, 0x00200000, 0x00100000 },
   /* 2 */  { 12, 200, 0x00002000, 0x00004000, 0x00008000, 0x0000c000, 0x0000e000, 0x0000ff00, 0x0000e000, 0x0000c000, 0x00008000, 0x00004000, 0x00002000, 0x00001000 },
   /* 3 */  { 12, 200, 0x00000020, 0x00000040, 0x00000080, 0x000000c0, 0x000000e0, 0x000000ff, 0x000000e0, 0x000000c0, 0x00000080, 0x00000040, 0x00000020, 0x00000010 },
-  /* 4 */  { 1, 32767, 0xFFFFFFFF },
-  /* 5 */  { 1, 32767, 0x00FF0000 },
-  /* 6 */  { 1, 32767, 0x0000FF00 },
-  /* 7 */  { 1, 32767, 0x000000FF },
+  /* 4 */  { 1, 0xffff, 0xFFFFFFFF },
+  /* 5 */  { 1, 0xffff, 0x00FF0000 },
+  /* 6 */  { 1, 0xffff, 0x0000FF00 },
+  /* 7 */  { 1, 0xffff, 0x000000FF },
 };
 #define NUMSEQ (sizeof Seqs / sizeof(Pattern))
 
-/* Working variables for pattern run and edit */
-Pattern currentPattern; /* Current pattern running (or not) */
-unsigned long nextStepTime;
-short nextStep;
-short currentSequence;
+/* Working variables and constants for pattern run */
+#define PATTERN_START 0
+#define PATTERN_NEXT 1
+#define PATTERN_STOP 2
+unsigned long nextStepTime;         /* The time (ms) for the next step to run */
+short nextStepDelay;                /* Delay (ms) between steps */
+const short DelayIncrement = 10;    /* Increment/decrement of delay (white buttons during run) */
+const short MaxDelay = 5000;        /* Maximum delay (ms); min is always 0 */
+short currentSequence;              /* Current pattern sequence in RAM */
+
+/* Working variables for EEPROM pattern run and edit */
+typedef struct {
+  Pattern pattern;  /* RAM copy of pattern */
+  short nextStep;   /* Next step to run */
+} SeqData;
+SeqData seqData;
+uint8_t editButton;   /* In edit mode, the button that is being edited */
+
+/*  The PatternRunner class defines an abstract for  objects that run each
+ *  of the available patterns. By default, seven of the patterns are EEPROM
+ *  canned patterns that are run by the EEPROMRunner subclass (defined below).
+ *  One pattern is run on the ColorWheelRunner subclass, which is a demo
+ *  class to show how to write and connect a pattern runner.
+ */
+class PatternRunner {
+  public:
+    virtual void start( int num ){};
+    virtual void next( ){};
+    virtual void stop( ){};
+};
+PatternRunner *patternRunners[8];
 
 /* Working variables for RGB drivers */
-short red, green, blue, white; /* yes, signed */
-const short incr = 16;
+short red, green, blue, white;        /* Current/new RGB and W values; yes, signed */
+const short ColorIncrement = 8;       /* Inc/dec amount for intensity buttons */
+
+/* Some helpful macros for dealing with color */
 #define LS(b,n) (((unsigned long)(b & 0xff))<<n)
 #define LONGRGB( w, r, g, b ) (LS(w,24)|LS(r,16)|LS(g,8)|(b&0xff))
 
@@ -150,8 +176,8 @@ const short incr = 16;
 #define STATE_IDLE 1
 #define STATE_GETEDITBTN 2
 #define STATE_EDITSEQ 3
-uint8_t state = STATE_OFF;
-uint8_t editButton;
+#define STATE_RUN 4
+uint8_t state = STATE_OFF;          /* Current system state */
 
 /* Working variables for button handling */
 typedef unsigned short button_t;
@@ -173,16 +199,22 @@ typedef unsigned short button_t;
 #define BUTTON_RESET 15
 unsigned long keyDownTime[numKeys];
 unsigned long lastKeyTime;
+unsigned long lastButtonCheck;
 
-/* Working variables for LED state tracking */
+/* Working variables for LED state tracking. I track them separately from
+ * the Trellis' own tracking so I can blink them and restore them individually.
+ */
 unsigned long ledState = 0;
 unsigned long blinkSet = 0;
 unsigned long lastBlink = 0;
 #define BLINKRATE 250
 #define BMASK( button ) (((unsigned short) 1) << (button & BUTTONMASK))
 
+/* Arduino's software reset -- jump to 0 */
+void (*resetFunc)(void) = 0;
+
 /*
- * Prototype to set/enforce argument default.
+ * Prototypes to set/enforce argument default.
  */
 void mySetLED( uint8_t n, bool state = true, bool update = false );
 void myClrLED( uint8_t n, bool update = false );
@@ -204,42 +236,140 @@ uint8_t getEECheck() {
 }
 
 /* 
- * Put a step of the current pattern on the drivers.
+ * Put a step of the current (RAM-copy) pattern on the drivers.
  * 
  * @param n The step of the current pattern to be shown.
  */
-void showStep( short n ) {
-  unsigned long rgb = currentPattern.steps[n];
+void showStep() {
+  unsigned long rgb = seqData.pattern.steps[ seqData.nextStep ];
   white = (rgb >> 24) & 0xff;
   red = (rgb >> 16) & 0xff;
   green = (rgb >> 8) & 0xff;
   blue = rgb & 0xff;
+  // Serial.print("showStep seq "); Serial.print(currentSequence); Serial.print(" step "); Serial.print( p->nextStep ); Serial.print(": ");
   setRGBW();
-  Serial.print("Seq "); Serial.print(currentSequence); Serial.print(" step "); Serial.print(n); Serial.print(": ");
-  Serial.print("W="); Serial.print(white); Serial.print(", ");
-  Serial.print("R="); Serial.print(red); Serial.print(", G="); Serial.print(green); Serial.print(", B="); Serial.println(blue);
 }
 
 /*
  * Check to see if the next scheduled pattern step is eligible
  * (timing), and display it if so.
  */
-void tickSequence() {
-  /* If we're not running a sequence, just return */
-  if ( currentSequence < 0 ) {
-    return;
-  }
+void tickSequence( ) {
+  if ( currentSequence < 0 ) return; /* assertion */
   /* Is it time for the next step? */
   if ( millis() < nextStepTime )
     return;
   /* Yes, yes it is. */
-  nextStep += 1;
-  if ( nextStep >= currentPattern.len ) {
-    nextStep = 0;
-  }
-  showStep( nextStep );
-  nextStepTime = millis() + currentPattern.dly;
+  patternRunners[ currentSequence ]->next();
+  /* Set timing for next */
+  nextStepTime = millis() + nextStepDelay;
 }
+
+/*
+ * Load the specified sequence from EEPROM into RAM.
+ * 
+ * @param n The number of the sequence to load from EEPROM.
+ */
+void loadSequence( short n ) {
+  uint16_t addr = 1 + n * sizeof(Pattern);
+  EEPROM.get( addr, seqData.pattern );
+}
+
+class EEPROMRunner : public PatternRunner {
+  private:
+    int nPattern;
+    
+  public: 
+    void start( int num ) {
+      // Serial.print("EEPROMRunner::start"); Serial.println( num, DEC );
+      /* Copy pattern from EEPROM to RAM */
+      nPattern = num;
+      loadSequence( num );
+      /* Run the first step */
+      seqData.nextStep = 0;
+      showStep();
+      /* Set timing for next step -- use pattern's setting to start */
+      nextStepDelay = seqData.pattern.dly;
+      nextStepTime = millis() + nextStepDelay;
+    };
+
+    void next() {
+      // Serial.print("EEPROMRunner::next "); Serial.println( nPattern, DEC );
+      seqData.nextStep += 1;
+      if ( seqData.nextStep >= seqData.pattern.len ) {
+        seqData.nextStep = 0;
+      }
+      showStep();
+    };
+  
+    void stop() {
+      /* Nothing to do here */
+      // Serial.print("EEPROMRunner::stop "); Serial.println( nPattern, DEC );
+    };
+};
+
+class ColorWheelRunner : public PatternRunner {
+  private:
+    int state;
+    const int inc = 8;
+
+  public:
+    void start( int num ) {
+      state = 0;
+      red = green = blue = 0;
+      nextStepDelay = 50;
+      setRGBW();
+      return NULL;
+    }
+    void next() {
+      switch ( state ) {
+        case 0: /* red up */
+          red = red + inc;
+          if ( red >= 255 ) {
+            red = 255;
+            ++state;
+          }
+          break;
+        case 1: /* blue down */
+          blue = blue - inc;
+          if ( blue <= 0 ) {
+            blue = 0;
+            ++state;
+          }
+          break;
+        case 2: /* green up */
+          green = green + inc;
+          if ( green >= 255 ) {
+            green = 255;
+            ++state;
+          }
+          break;
+        case 3: /* red down */
+          red = red - inc;
+          if ( red <= 0 ) {
+            red = 0;
+            ++state;
+          }
+          break;
+        case 4: /* blue up */
+          blue = blue + inc;
+          if ( blue >= 255 ) {
+            blue = 255;
+            ++state;
+          }
+          break;
+        case 5: /* green down */
+          green = green - inc;
+          if ( green <= 0 ) {
+            green = 0;
+            state = 0; /* Start over */
+          }
+          break;
+      }
+      setRGBW();
+    }
+    void stop() {};
+};
 
 /*
  * Clear all Trellis LEDs and update display.
@@ -247,6 +377,7 @@ void tickSequence() {
 void clearLEDs() {
   for (uint8_t i=0; i<numKeys; ++i) {
     trellis.clrLED(i);
+    delay(30);
   }
   trellis.writeDisplay();
   ledState = 0;
@@ -376,10 +507,10 @@ void updateBlinkers() {
  * Update LED drivers to current RGBW values.
  */
 void setRGBW() {
+  // Serial.print("setRGBW R="); Serial.print(red); Serial.print(", G="); Serial.print(green); Serial.print(", B="); Serial.println(blue);
   analogWrite(RGBPIN_RED, red);
   analogWrite(RGBPIN_GREEN, green);
   analogWrite(RGBPIN_BLUE, blue);  
-  /* analogWrite(RGBPIN_WHITE, white); */
 }
 
 /*
@@ -401,41 +532,46 @@ short incrementBrightness( short currVal, short incr ) {
 }
 
 /*
- * Handle button-based color adjustment. ??? switch statement?
+ * Handle button-based color adjustment.
  * 
  * @param btn Button that's been pressed.
  */
 void adjustColor( button_t btn ) {
   switch (btn) {
     case BUTTON_RED_UP:
-      red = incrementBrightness( red, incr );
+      red = incrementBrightness( red, ColorIncrement );
+      white = 0;
       break;
     case BUTTON_RED_DN:
-      red = incrementBrightness( red, -incr );
+      red = incrementBrightness( red, -ColorIncrement );
+      white = 0;
       break;
     case BUTTON_GREEN_UP:
-      green = incrementBrightness( green, incr );
+      green = incrementBrightness( green, ColorIncrement );
+      white = 0;
       break;
     case BUTTON_GREEN_DN:
-      green = incrementBrightness( green, -incr );
+      green = incrementBrightness( green, -ColorIncrement );
+      white = 0;
       break;
     case BUTTON_BLUE_UP:
-      blue = incrementBrightness( blue, incr );
+      blue = incrementBrightness( blue, ColorIncrement );
+      white = 0;
       break;
     case BUTTON_BLUE_DN:
-      blue = incrementBrightness( blue, -incr );
+      blue = incrementBrightness( blue, -ColorIncrement );
+      white = 0;
       break;
     case BUTTON_WHITE_UP:
-      white = incrementBrightness( white, incr );
+      white = incrementBrightness( white, ColorIncrement );
       red = blue = green = white;
       break;
     case BUTTON_WHITE_DN:
-      white = incrementBrightness( white, -incr );
+      white = incrementBrightness( white, -ColorIncrement );
       red = blue = green = white;
       break;
   }
   setRGBW();
-  Serial.print("Adjust to R="); Serial.print(red); Serial.print(", G="); Serial.print(green); Serial.print(", B="); Serial.println(blue);
 }
 
 /* 
@@ -444,9 +580,12 @@ void adjustColor( button_t btn ) {
  * @param button The button that was pressed (not used here).
  */
 void doIdle( button_t button ) {
+  if ( currentSequence >= 0 || state == STATE_RUN ) {
+    patternRunners[ currentSequence ]->stop();
+  }
   currentSequence = -1;
-  clearBlinkers(0xffff);
   state = STATE_IDLE;
+  clearBlinkers(0xffff);
 }
 
 /*
@@ -490,64 +629,36 @@ void doPowerOff( button_t button ) {
   digitalWrite(RGBPIN_RED, 0);
   digitalWrite(RGBPIN_GREEN, 0);
   digitalWrite(RGBPIN_BLUE, 0);
-  /* digitalWrite(RGBPIN_WHITE, 0); */
   clearLEDs();
   state = STATE_OFF;
 }
 
 /*
- * Load the specified sequence from EEPROM into RAM.
+ * Button handler for sequence button press. Determines if using
+ * internal canned/EEPROM sequence or user-provided function,
+ * and dispatches accordingly.
  * 
- * @param n The number of the sequence to load from EEPROM.
+ * @param button The bottom that was pressed (translated into sequence number to run).
  */
-void loadSequence( short n ) {
-  uint16_t addr = 1 + n * sizeof(Pattern);
-  Serial.print("Loading EEPROM pattern "); Serial.println(n, DEC);
-  EEPROM.get( addr, currentPattern );
-  Serial.print("Pattern length is "); Serial.println(currentPattern.len);
-  Serial.print("Pattern delay is "); Serial.println(currentPattern.dly);
-}
-
-/*
- * Stop the running sequence, if any.
- */
-void stopSequence() {
-  if (currentSequence < 0) {
-    return;
-  }
-  doIdle( 0 );
-}
-
-/*
- * Button handler to start (or stop) sequence.
- * 
- * @param button The button that was pressed (translated into sequence to run).
- */
-void doSequence( button_t button ) {
+void doSequenceButton( button_t button ) {
+  /* Stop the pattern if running */
   button = button & BUTTONMASK;
-  if ( button < 8 ) {
-    doIdle( button );
-    return;
-  }
   int newSeq = button - 8;
+  int oldSeq = currentSequence;
   if ( currentSequence >= 0 ) {
-    int oldSeq = currentSequence;
-    stopSequence();
-    /* If same button as current sequence, toggle off to idle */
-    if ( newSeq == oldSeq ) {
+    doIdle( button );
+    if ( oldSeq == newSeq ) {
+      /* Hit same button as running sequence, so just stop */
       return;
     }
   }
-  addBlinker( button );
 
-  /* Copy pattern from EEPROM to RAM */
-  loadSequence( newSeq );
-
-  /* Get started */
+  /* Start the new sequence */
+  Serial.print("Starting new sequence "); Serial.println( newSeq );
   currentSequence = newSeq;
-  nextStep = 0;
-  showStep( nextStep );
-  nextStepTime = millis() + currentPattern.dly;
+  addBlinker( button );
+  patternRunners[currentSequence]->start( currentSequence );
+  state = STATE_RUN;
 }
 
 /* 
@@ -556,15 +667,44 @@ void doSequence( button_t button ) {
  * @param button The button that was pressed (determines which sequence to edit).
  */
 void doEnterEdit( button_t button ) {
-  Serial.println("doEnterEdit");
-  stopSequence();
+  doIdle( button );
+  // ??? Check if current pattern func is our EEPROM func, error flash and return if not (we can't edit).
   state = STATE_EDITSEQ;
   editButton = button & BUTTONMASK;
   loadSequence( editButton - 8 );
   mySetLED( editButton, true, true );
   setBlinkers( 0x00ff ); 
-  nextStep = 0; /* We'll re-use this for our current programming step */
-  showStep( nextStep );
+  seqData.nextStep = 0; /* We'll re-use this for our current programming step */
+  showStep();
+}
+
+/*
+ * Button handler to change timing (in run mode).
+ * 
+ * @param button The button that was pressed
+ */
+void doTiming( button_t button ) {
+  // Serial.print("doTiming "); Serial.println(button,HEX);
+  /* Fetch the current timing */
+  if ( currentSequence < 0 ) return; /* assertion */
+  if ( ( button & BUTTONMASK ) == BUTTON_WHITE_UP ) {
+    if ( nextStepDelay >= MaxDelay ) {
+      nextStepDelay = MaxDelay;
+    } else {
+      nextStepDelay += DelayIncrement;
+    }
+  } else if ( ( button & BUTTONMASK ) == BUTTON_WHITE_DN ) {
+    if ( nextStepDelay <= DelayIncrement ) {
+      nextStepDelay = 0;
+    } else {
+      nextStepDelay -= DelayIncrement;
+    }
+  }
+  /* Save the delay and rewrite EEPROM, so it's stored ??? if it's an EEPROM pattern?*/
+  seqData.pattern.dly = nextStepDelay;
+  uint16_t eaddr = 1 + currentSequence * sizeof(Pattern);
+  EEPROM.put( eaddr, seqData.pattern );
+  EEPROM[0] = getEECheck(); /* Recompute checksum */
 }
 
 /*
@@ -573,39 +713,37 @@ void doEnterEdit( button_t button ) {
  * @param button The button that was pressed (action).
  */
 void doEditSeq( button_t button ) {
-  Serial.print("doEditSeq "); Serial.println(button, HEX);
   if ( (button & BUTTONMASK) == editButton) {
     /* Save this step */
-    Serial.print("Save step "); Serial.println(nextStep, DEC);
+    Serial.print("Save step "); Serial.println(seqData.nextStep, DEC);
     unsigned long rgb = LONGRGB( white, red, green, blue );
-    currentPattern.steps[nextStep] = rgb;
-    nextStep += 1;
-    if ( nextStep >= MAXSTEP || (button & LONGPRESS) ) {
+    seqData.pattern.steps[seqData.nextStep] = rgb;
+    seqData.nextStep += 1;
+    if ( seqData.nextStep >= MAXSTEP || (button & LONGPRESS) ) {
       /* Stop editing */
-      Serial.print("End of edit, saving pattern "); Serial.print( editButton-8 ); Serial.print(" length "); Serial.println( nextStep );
+      Serial.print("End of edit, saving pattern "); Serial.print( editButton-8 ); Serial.print(" length "); Serial.println( seqData.nextStep );
       
       /* Write currentPattern to EEPROM */
-      currentPattern.len = nextStep; /* Make sure length is correct--may shorten! */
-      currentPattern.dly = nextStep > 1 ? white * 8 : 0x7fff; /* force long delay if only one step in pattern */
-      for (uint8_t i=nextStep; i<MAXSTEP; ++i) {
-        currentPattern.steps[i] = 0;
+      seqData.pattern.len = seqData.nextStep; /* Make sure length is correct--may shorten! */
+      seqData.pattern.dly = seqData.nextStep > 1 ? nextStepDelay : 0x7fff; /* force long delay if only one step in pattern */
+      for (uint8_t i=seqData.nextStep; i<MAXSTEP; ++i) {
+        seqData.pattern.steps[i] = 0;
       }
       uint16_t eaddr = 1 + (editButton-8) * sizeof(Pattern);
-      EEPROM.put( eaddr, currentPattern );
+      EEPROM.put( eaddr, seqData.pattern );
       EEPROM[0] = getEECheck(); /* Recompute checksum */
 
       /* Clear Trellis and run pattern */
-      clearBlinkers( 0x00ff );
+      clearBlinkers( 0xffff );
       doIdle(button);
-      doSequence(button);
+      doSequenceButton(button);
     } else {
-      showStep(nextStep);
+      showStep();
     }
   } else if ( button < 8 ) {
       doColorAdjustment( button );
       setRGBW();
   } else {
-      Serial.print("In edit, button "); Serial.println(button);
       flash( button & BUTTONMASK, 3, 50 );
   }
 }
@@ -617,7 +755,7 @@ void doEditSeq( button_t button ) {
  * @param button The button that was pressed (adjusts color channel).
  */
 void doColorAdjustment( button_t button ) {
-  stopSequence();
+  doIdle( button );
   adjustColor( button & BUTTONMASK );
 }
 
@@ -626,68 +764,11 @@ void doColorAdjustment( button_t button ) {
  * 
  * @param button The button that was pressed (not used here).
  */
-void (*resetFunc)(void) = 0; // Arduino reset function at address zero
 void doEEReset( button_t button ) {
   Serial.println("EEPROM reset!");
   EEPROM[0] = ~EEPROM[0];
   delay(250);
   resetFunc();
-}
-
-/*
- * Arduino setup routine (called by runtime).
- */
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600); while (!Serial) { ; }
-  Serial.println(F("RGB Strip Driver " __DATE__ " " __TIME__));
-
-  /* Initialize RGB outputs. These are sinks. */
-  pinMode(RGBPIN_RED, OUTPUT);
-  pinMode(RGBPIN_GREEN, OUTPUT);
-  pinMode(RGBPIN_BLUE, OUTPUT);
-  /* pinMode(RGBPIN_WHITE, OUTPUT); */
-  digitalWrite(RGBPIN_RED, 0);
-  digitalWrite(RGBPIN_GREEN, 0);
-  digitalWrite(RGBPIN_BLUE, 0);
-  /* digitalWrite(RGBPIN_WHITE, 0); */
-
-  /* We're not using interrupts from the Trellis
-  pinMode(INTPIN, INPUT);
-  digitalWrite(INTPIN, HIGH);
-  */
-  
-  ledState = 0;
-  blinkSet = 0;
-  state = STATE_OFF;
-  
-  trellis.begin(0x70);
-  clearLEDs();
-
-  /* Initialize EEPROM if needed */
-  mySetLED(0, true, true);
-  Serial.println(F("Checking EEPROM..."));
-  uint8_t ck = getEECheck();
-  if ( EEPROM[0] != ck ) {
-    unsigned short ll = sizeof(Pattern) * NUMSEQ;
-    if ( ll >= EEPROM.length() ) { /* need ll+1 bytes */
-      Serial.print("TOO LONG! NEED "); Serial.print(ll); Serial.print(" but only have "); Serial.println(EEPROM.length());
-      ll = (EEPROM.length() / sizeof(Pattern)) * sizeof(Pattern);
-    }
-    Serial.print(F("EEPROM checksum mismatch, looking for ")); Serial.print(ck, HEX); Serial.print(" got "); Serial.println( EEPROM[0], HEX );
-    mySetLED(1, true, true);
-    for (uint16_t i=0; i<ll; ++i) {
-      byte b = pgm_read_byte_near( ((byte *) &Seqs) + i );
-      EEPROM[i+1] = b;
-    }
-    ck = getEECheck();
-    Serial.print("EEPROM loaded, checksum is now "); Serial.println(ck, HEX);
-    EEPROM[0] = ck;
-  } else
-    Serial.println(F("EEPROM checksum PASS!"));
-  
-  clearLEDs();
-  Serial.println("setup() finished.");
 }
 
 /* 
@@ -739,7 +820,7 @@ button_t getButton() {
     /* Nothing has changed, but see if any of 0-7 are down for long enough.
      *  If so, generate repeating events.
      */
-    for (uint8_t key=0; key<7; ++key) {
+    for (uint8_t key=0; key<8; ++key) {
       if ( keyDownTime[key] > 0 && ( keyDownTime[key] + 1000 ) < millis() ) {
         keyDownTime[key] = millis() - 800;
         return SHORTPRESS | KEYREPEAT | (button_t) key;
@@ -749,8 +830,7 @@ button_t getButton() {
   }
   for (uint8_t key=0; key<numKeys; ++key) {
     if (trellis.isKeyPressed(key)) {
-      Serial.print("Key "); Serial.print(key);
-      Serial.println(" down");
+      // Serial.print("Key "); Serial.print(key); Serial.println(" down");
       if (keyDownTime[key] == 0) {
         /* Key is newly-pressed */
         keyDownTime[key] = millis();
@@ -758,8 +838,7 @@ button_t getButton() {
         /* Key is still pressed */
       }
     } else if (keyDownTime[key] > 0) {
-      Serial.print("Key "); Serial.print(key);
-      Serial.print(" up");
+      // Serial.print("Key "); Serial.print(key); Serial.print(" up");
       if (keyDownTime[key]+1000 > millis()) {
         //Serial.println(", short press.");
         keyDownTime[key] = 0;
@@ -776,58 +855,92 @@ button_t getButton() {
   return NOBUTTON;
 }
 
-void xramp( short *pv, int dir) {
-  if ( dir < 0 ) {
-    while (*pv > 0) {
-      *pv = *pv - 1;
-      setRGBW();
-      delay(10);
-    }
-  } else {
-    while (*pv < 255) {
-      *pv = *pv + 1;
-      setRGBW();
-      delay(10);
-    }
-  }
-}
+/*
+ * Arduino setup routine (called by runtime).
+ */
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); while (!Serial) { ; }
+  Serial.println(F("\n\n***RESET\ntoggledbits RGB Strip Driver " __DATE__ " " __TIME__));
 
-void colorWheel(unsigned short button) {
-  uint8_t r, g, b;
-  red = blue = green = 0; 
-  setRGBW();
-  xramp( &red, 1 );
-  while (true) {
-    xramp( &green, 1 );
-    xramp( &red, -1 );
-    xramp( &blue, 1 );
-    xramp( &green, -1 );
-    xramp( &red, 1 );
-    xramp( &blue, -1 );
+  /* Initialize RGB outputs. */
+  red = green = blue = white = 0;
+  pinMode(RGBPIN_RED, OUTPUT);
+  pinMode(RGBPIN_GREEN, OUTPUT);
+  pinMode(RGBPIN_BLUE, OUTPUT);
+  digitalWrite(RGBPIN_RED, 0);
+  digitalWrite(RGBPIN_GREEN, 0);
+  digitalWrite(RGBPIN_BLUE, 0);
+  
+  ledState = 0;
+  blinkSet = 0;
+  state = STATE_OFF;
+  lastKeyTime = lastButtonCheck = 0;
+  
+  trellis.begin(0x70);
+  clearLEDs();
+
+  /* Initialize EEPROM if needed */
+  mySetLED(0, true, true);
+  Serial.println(F("Checking EEPROM..."));
+  uint8_t ck = getEECheck();
+  if ( EEPROM[0] != ck ) {
+    unsigned short ll = sizeof(Pattern) * NUMSEQ;
+    if ( ll >= EEPROM.length() ) { /* need ll+1 bytes */
+      Serial.print("TOO LONG! NEED "); Serial.print(ll); Serial.print(" but only have "); Serial.println(EEPROM.length());
+      ll = (EEPROM.length() / sizeof(Pattern)) * sizeof(Pattern);
+    }
+    Serial.print(F("EEPROM checksum mismatch, looking for ")); Serial.print(ck, HEX); Serial.print(" got "); Serial.println( EEPROM[0], HEX );
+    mySetLED(1, true, true);
+    for (uint16_t i=0; i<ll; ++i) {
+      byte b = pgm_read_byte_near( ((byte *) &Seqs) + i );
+      EEPROM[i+1] = b;
+    }
+    ck = getEECheck();
+    Serial.print("EEPROM loaded, checksum is now "); Serial.println(ck, HEX);
+    EEPROM[0] = ck;
+  } else
+    Serial.println(F("EEPROM checksum PASS!"));
+
+  EEPROMRunner er = EEPROMRunner();
+  for ( uint8_t i=0; i<8; ++i) {
+    patternRunners[i] = &er;
   }
+  /* Provide any overrides for the default pattern function here */
+  patternRunners[4] = new ColorWheelRunner(); /* override for button 13/power button/pattern 5 */
+  
+  /* Finished. Clear the Trellis LEDs and return */
+  clearLEDs();
+  Serial.println("setup() finished.");
 }
 
 /* Quickie button/state transition table. */
 typedef struct {
   int currentState; /* State to match */
-  button_t button;  /* Button to match */
+  button_t button;  /* Button (mask) to match (LSB=button 1, MSB=button 16) */
   button_t flags;   /* Flags to match (match any) */
   void (*func)( button_t buttonWithFlags ); /* Button handler to call */
 } T;
 const T Trans[] = {
   { STATE_OFF, BMASK( BUTTON_RESET ), LONGPRESS, doEEReset },
-  /* Button 12 (bottom left) is power button */
+  /* Button 13 (bottom left) is power button */
   { STATE_OFF, BMASK( BUTTON_POWER ), SHORTPRESS|LONGPRESS, doPowerOn },
   { STATE_IDLE, BMASK( BUTTON_POWER ), LONGPRESS, doPowerOff },
   /* Color buttons in idle stop sequence and change color */
   { STATE_IDLE, 0x00ff, SHORTPRESS, doColorAdjustment },
-  /* Press 8-15 to run or stop sequence preset */
-  { STATE_IDLE, 0xff00, SHORTPRESS, doSequence },
-  /* Long press 8-15 in idle state to edit sequence preset */
+  /* Press 9-16 to run or stop sequence preset */
+  { STATE_IDLE, 0xff00, SHORTPRESS, doSequenceButton },
+  /* Long press 9-16 in idle state to edit sequence preset */
   { STATE_IDLE, 0xff00, LONGPRESS, doEnterEdit },
-  /* Button 8-15 presses during edit are commands */
+  /* Button 9-16 presses during edit are commands */
   { STATE_EDITSEQ, 0xff00, SHORTPRESS|LONGPRESS, doEditSeq },
-  { STATE_EDITSEQ, 0x00ff, SHORTPRESS|LONGPRESS, doColorAdjustment }
+  { STATE_EDITSEQ, 0x00ff, SHORTPRESS|LONGPRESS, doColorAdjustment },
+  /* During run, long press on power is always power off */
+  { STATE_RUN, BMASK( BUTTON_POWER ), LONGPRESS, doPowerOff },
+  /* During run of pattern, short press changes sequence */
+  { STATE_RUN, 0xff00, SHORTPRESS, doSequenceButton },
+  /* During run, intensity buttons idle except white, which changes timing */
+  { STATE_RUN, BMASK( BUTTON_WHITE_UP )|BMASK( BUTTON_WHITE_DN ), SHORTPRESS|LONGPRESS, doTiming }
 };
 #define NTRANS (sizeof(Trans) / sizeof(T))
 
@@ -835,16 +948,19 @@ const T Trans[] = {
  * Runtime loop.
  */
 void loop() {
-  delay(30);
+  delay(10);
   
   updateBlinkers();
 
   /* doNextInSequence? */
-  if ( state != STATE_OFF ) {
+  if ( state == STATE_RUN ) {
     tickSequence();  
   }
-  
+
+  if ( lastButtonCheck + 40 > millis() )
+    return;
   button_t btn = getButton();
+  lastButtonCheck = millis();
   if ( btn == NOBUTTON ) {
     if ( lastKeyTime + DIMDELAY <= millis() ) {
       trellis.setBrightness(1);
