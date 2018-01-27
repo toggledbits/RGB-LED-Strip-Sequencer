@@ -202,14 +202,15 @@ it up some day, I promise.
 To set the default pattern delay interval, your subclass can set the global `nextStepDelay`. This value is in milliseconds,
 and must be greater than or equal to zero.
 
-To bind your runner to a button, go to the setup() routine, and you'll see the code below. The bold line is an example
-of how and where you add your pattern runner. In this case, it bind the new runner to pattern 0 (first button the third row).
+To bind your runner to a button, go to the `setup()` function, and near its end you'll see the code below. The bold line is an example
+of how and where you add your pattern runner. In this example, we binds a new runner to pattern 0 (first button the third row).
 
-<pre>  EEPROMRunner er = EEPROMRunner();
+<pre>
+  EEPROMRunner er = EEPROMRunner();
   for ( uint8_t i=0; i<8; ++i) {
     patternRunners[i] = &er;
   }
   /* Provide any overrides for the default pattern function here */
   patternRunners[4] = new ColorWheelRunner(); /* override for button 13/power button/pattern 5 */
-  <b>patternRunners[0] = new MyAmazingNewPattern();</b>
+  <b>patternRunners[0] = new MyNewPatternRunner();</b>
 </pre>
