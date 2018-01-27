@@ -1,7 +1,7 @@
 /*
  * RGB (and optionally W) LED strip sequencer/controller.
  * @author Patrick H. Rigney
- * @version 1.0 2017-12-17
+ * @version 1.1 2018-01-27
  * 
  * This program controls an RGB LED strip, allowing control of the brightness of
  * each channel, and the playback of eight different sequences of up to 16 steps
@@ -18,6 +18,8 @@
  * the code and modify it to do more interesting things.
  * 
  * Target: Arduino Uno (Genuino)
+ * 
+ * Github Repo: https://github.com/toggledbits/RGB-LED-Strip-Sequencer
  * 
  * The circuit:
  * Pin configurations are generally settable by modifying the #defines below, but
@@ -87,6 +89,19 @@
  * 
  * Finally, if a button is not pressed for DIMDELAY ms, the system dims the Trellis to
  * its lowest brightness. A button press restores full brightness.
+ * 
+ * -------------------------------------------------------------------------------------
+ * REVISION HISTORY
+ * 
+ * 2018-01-27 Revision 1.1
+ * Add/finalize handling of pattern rate change. The white up/down buttons are now used
+ * to set the pattern rate. If the pattern is an EEPROM canned pattern, the last rate
+ * used is stored with the pattern and restore when the pattern is later used.
+ * Running of patterns is now push to a subclass of PatternRunner. The default class,
+ * EEPROMRunner, runs a pattern from the EEPROM store. This allows others to add patterns
+ * by making their own subclass of PatternRunner. A ColorWheelRunner pattern is pro-
+ * vided to demostrate; it is bound to button 13 by default. See the Github README.md
+ * file for more details.
  * 
  */
 #include <Adafruit_Trellis.h>
