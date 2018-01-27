@@ -156,8 +156,8 @@ USB power at 5V up to the shield on the VIN pin, and the shield would attempt to
 a diode facing the Arduino has been added to the shield, which blocks any backfeeding of the shield from the Arduino. The
 Arduino can be safely connected to USB, and will even power the Trellis, but it won't power the LED circuit on the shield.
 * I had forgotten to current limit the digital pins--whoops!--so I added R5-7.
-* I have not yet provided a way in the Sketch code to control the rate at which patterns are run. This is a relatively
-easy enhancement to the UI.
+* I had not yet provided a way in the Sketch code to control the rate at which patterns are run. This is now done. In the
+run mode, the white up/down keys control the pattern rate. The pattern is stored in EEPROM with the pattern.
 
 So, as it stands today, the project consists of:
 
@@ -182,3 +182,34 @@ This Github repository contains all of the files you need: schematics, board lay
 using a proto board or breadboard), the Arduino Sketch, and the enclosure model (STL) files.
 
 The enclosure models (STLs) are also [on Thingiverse](https://www.thingiverse.com/thing:2768560).
+
+## Write Your Own Pattern Runner ##
+
+As of version 1.1 of the code, you have the ability to easily write your own patterns into Sketch, if the pushbutton
+user interface doesn't provide you enough flexibility. Here's what you need to know.
+
+Patterns are run by a subclass of `PatternRunner`. Your class must have three methods: `start`, `next`, and `stop`. You
+can look at the class `ColorWheelRunner` as an example. The `start` method is used to do whatever is necessary to 
+initialize the pattern. It must also set the LED strip to the pattern's first step (see below). The `next` method is
+then called repeatedly at the pattern delay interval to put the next pattern on the LED strip. Your subclass must
+maintain enough state (e.g. private data) to know what step is next. Finally, when the user wants to stop the pattern,
+the `stop` method is called. In most cases, this method really won't need to do anything.
+
+To set the LED strip colors, the subclass methods should set the `red`, `green`, and `blue` global variables to the
+desired values (0-255), and then call `setRGBW()`. Yes, the globals are gross and the OO is inconsistent; I'll clean
+it up some day, I promise.
+
+To set the default pattern delay interval, your subclass can set the global `nextStepDelay`. This value is in milliseconds,
+and must be greater than or equal to zero.
+
+To bind your runner to a button, go to the setup() routine, and you'll see the code below. The bold line is an example
+of how and where you add your pattern runner.
+
+`EEPROMRunner er = EEPROMRunner();
+  for ( uint8_t i=0; i<8; ++i) {
+    patternRunners[i] = &er;
+  }
+  /* Provide any overrides for the default pattern function here */
+  patternRunners[4] = new ColorWheelRunner(); /* override for button 13/power button/pattern 5 */
+  **patternRunners[0] = new MyAmazingNewPattern();**
+`
