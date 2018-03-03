@@ -1,7 +1,8 @@
+
 /*
  * RGB (and optionally W) LED strip sequencer/controller.
  * @author Patrick H. Rigney
- * @version 1.1 2018-01-27
+ * @version 1.2 2018-03-03
  * 
  * This program controls an RGB LED strip, allowing control of the brightness of
  * each channel, and the playback of eight different sequences of up to 16 steps
@@ -93,6 +94,9 @@
  * -------------------------------------------------------------------------------------
  * REVISION HISTORY
  * 
+ * 2018-03-03 Revision 1.2
+ * Fix a bug with button handling during edit.
+ *
  * 2018-01-27 Revision 1.1
  * Add/finalize handling of pattern rate change. The white up/down buttons are now used
  * to set the pattern rate. If the pattern is an EEPROM canned pattern, the last rate
@@ -723,12 +727,24 @@ void doTiming( button_t button ) {
 }
 
 /*
+ * Button handler for color buttons. Stops running sequence and
+ * adjusts color.
+ * 
+ * @param button The button that was pressed (adjusts color channel).
+ */
+void doColorAdjustment( button_t button ) {
+  doIdle( button );
+  adjustColor( button & BUTTONMASK );
+}
+
+/*
  * Button handler for editing pattern (in edit mode).
  * 
  * @param button The button that was pressed (action).
  */
 void doEditSeq( button_t button ) {
-  if ( (button & BUTTONMASK) == editButton) {
+  button_t trueButton = button & BUTTONMASK;
+  if ( trueButton == editButton) {
     /* Save this step */
     Serial.print("Save step "); Serial.println(seqData.nextStep, DEC);
     unsigned long rgb = LONGRGB( white, red, green, blue );
@@ -755,23 +771,14 @@ void doEditSeq( button_t button ) {
     } else {
       showStep();
     }
-  } else if ( button < 8 ) {
-      doColorAdjustment( button );
+  } else if ( trueButton < 8 ) {
+      Serial.println("Color adjustment in edit");
+      adjustColor( button & BUTTONMASK );
       setRGBW();
   } else {
-      flash( button & BUTTONMASK, 3, 50 );
+      Serial.print("In edit, don't know how to handle button "); Serial.println(button);
+      flash( trueButton, 3, 50 );
   }
-}
-
-/*
- * Button handler for color buttons. Stops running sequence and
- * adjusts color.
- * 
- * @param button The button that was pressed (adjusts color channel).
- */
-void doColorAdjustment( button_t button ) {
-  doIdle( button );
-  adjustColor( button & BUTTONMASK );
 }
 
 /* Button handler to reset EEPROM. Cheat-ish. It just mangles the
@@ -947,9 +954,8 @@ const T Trans[] = {
   { STATE_IDLE, 0xff00, SHORTPRESS, doSequenceButton },
   /* Long press 9-16 in idle state to edit sequence preset */
   { STATE_IDLE, 0xff00, LONGPRESS, doEnterEdit },
-  /* Button 9-16 presses during edit are commands */
-  { STATE_EDITSEQ, 0xff00, SHORTPRESS|LONGPRESS, doEditSeq },
-  { STATE_EDITSEQ, 0x00ff, SHORTPRESS|LONGPRESS, doColorAdjustment },
+  /* During edit, all buttons are sent to the editor */
+  { STATE_EDITSEQ, 0xffff, SHORTPRESS|LONGPRESS, doEditSeq },
   /* During run, long press on power is always power off */
   { STATE_RUN, BMASK( BUTTON_POWER ), LONGPRESS, doPowerOff },
   /* During run of pattern, short press changes sequence */
